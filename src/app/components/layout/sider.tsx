@@ -16,7 +16,7 @@ const menuItems = [
   },
   {
     label: '二维码生成器',
-    href: '/qr-code-generator',
+    href: '/qrcode-generator',
     icon: '🔗',
   },
   {
