@@ -1,0 +1,58 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main, test ]
+
+jobs:
+  preview-deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/test'
+    environment: preview
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.16.0  # 指定 pnpm 版本，可以省略或改为 latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'pnpm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Preview
+        run: |
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+
+  production-deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.16.0  # 指定 pnpm 版本，可以省略或改为 latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: 'pnpm'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Deploy to Production
+        run: |
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
