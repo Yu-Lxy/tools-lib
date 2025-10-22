@@ -24,12 +24,20 @@ jobs:
           node-version: '22.19.0'
           cache: 'pnpm'
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Deploy to Preview
-        run: |
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+      - name: Pull Vercel env (preview)
+        run: vercel pull --yes --environment=preview --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (prebuilt)
+        run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Preview (use prebuilt output)
+        run: vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }}
 
   production-deploy:
     runs-on: ubuntu-latest
@@ -50,9 +58,17 @@ jobs:
           node-version: '22.19.0'
           cache: 'pnpm'
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Deploy to Production
-        run: |
-          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+      - name: Pull Vercel env (production)
+        run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (prebuilt)
+        run: vercel build --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Production (use prebuilt output)
+        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
