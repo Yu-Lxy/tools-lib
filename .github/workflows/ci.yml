@@ -1,10 +1,10 @@
-name: CI # 工作流的名称
+name: CI 
 
 on: # 触发事件
   push:
-    branches: [ main ] # 推送到 main 分支时触发
+    branches: [ main ]
   pull_request:
-    branches: [ main ] # 向 main 分支发起 PR 时触发
+    branches: [ main ]
 
 jobs:
   test: # 定义一个名为 test 的 job
@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22.19.0' # 请确保与你的项目 Node.js 版本一致
-          cache: 'npm'
+          cache: 'pnpm'
 
       # 3. 安装依赖
       - name: Install dependencies
