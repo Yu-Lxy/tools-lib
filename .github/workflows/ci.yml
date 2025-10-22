@@ -1,0 +1,35 @@
+name: CI # 工作流的名称
+
+on: # 触发事件
+  push:
+    branches: [ main ] # 推送到 main 分支时触发
+  pull_request:
+    branches: [ main ] # 向 main 分支发起 PR 时触发
+
+jobs:
+  test: # 定义一个名为 test 的 job
+    runs-on: ubuntu-latest # 运行在最新的 Ubuntu 虚拟机中
+
+    steps:
+      # 1. 拉取代码到虚拟机
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0' # 请确保与你的项目 Node.js 版本一致
+          cache: 'npm'
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm ci # 使用 npm ci 以获得更稳定、更快的安装
+
+      # 4. (可选) 运行 Lint 检查
+      - name: Run ESLint
+        run: npm run lint # 确保你的 package.json 中有相应的 lint 脚本
+
+      # 7. 构建项目（这是最关键的一步，确保能构建成功）
+      - name: Build Project
+        run: npm run build
