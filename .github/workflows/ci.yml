@@ -1,35 +1,37 @@
-name: CI 
+name: CI
 
-on: # 触发事件
+on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  test: # 定义一个名为 test 的 job
-    runs-on: ubuntu-latest # 运行在最新的 Ubuntu 虚拟机中
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. 拉取代码到虚拟机
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境
+      # 第一步：先安装 pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10.16.0  # 指定 pnpm 版本，可以省略或改为 latest
+
+      # 第二步：设置 Node.js 并配置 pnpm 缓存
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.19.0' # 请确保与你的项目 Node.js 版本一致
+          node-version: '22.19.0'
           cache: 'pnpm'
 
-      # 3. 安装依赖
       - name: Install dependencies
-        run: npm ci # 使用 npm ci 以获得更稳定、更快的安装
+        run: pnpm install --frozen-lockfile
 
-      # 4. (可选) 运行 Lint 检查
-      - name: Run ESLint
-        run: npm run lint # 确保你的 package.json 中有相应的 lint 脚本
+      - name: Run Lint
+        run: pnpm run lint
 
-      # 7. 构建项目（这是最关键的一步，确保能构建成功）
       - name: Build Project
-        run: npm run build
+        run: pnpm run build
