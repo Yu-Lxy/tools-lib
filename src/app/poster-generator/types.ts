@@ -9,6 +9,7 @@ export interface TextElement {
     y: number;
     fontFamily: string;
     fontWeight: string;
+    zIndex?: number;
   }
   
   export interface ImageElement {
@@ -19,6 +20,7 @@ export interface TextElement {
     y: number;
     width: number;
     height: number;
+    zIndex?: number;
   }
   
   export type PosterElement = TextElement | ImageElement;

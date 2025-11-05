@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Icons from '@/app/components/icons'
 import { PosterConfig, PosterElement, TextElement, ImageElement } from '../types'
 
 interface ControlPanelProps {
@@ -8,9 +9,10 @@ interface ControlPanelProps {
   selectedElement: PosterElement | null;
   onUpdateElement: (elementId: string, updates: Partial<PosterElement>) => void;
   onConfigUpdate: (config: PosterConfig) => void;
+  onElementSelect: (element: PosterElement) => void;
   onAddText: () => void;
   onAddImage: (file: File) => void;
-  onDeleteElement: () => void;
+  onDeleteElement: (id: string) => void;
 }
 
 export default function ControlPanel({
@@ -18,6 +20,7 @@ export default function ControlPanel({
   selectedElement,
   onUpdateElement,
   onConfigUpdate,
+  onElementSelect,
   onAddText,
   onAddImage,
   onDeleteElement,
@@ -53,23 +56,6 @@ export default function ControlPanel({
         </label>
       </div>
 
-      {selectedElement && (
-        <div className="alert alert-info">
-          <div>
-            <h3 className="font-bold">已选择元素</h3>
-            <div className="text-xs">
-              {selectedElement.type === 'text' ? '文本' : '图片'} - ID: {selectedElement.id}
-            </div>
-            <button
-              className="btn btn-error btn-xs mt-2"
-              onClick={onDeleteElement}
-            >
-              删除元素
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="space-y-2">
         <h4 className="font-semibold">元素列表</h4>
         {posterConfig.elements.map(element => (
@@ -81,7 +67,7 @@ export default function ControlPanel({
                 : 'border-base-300'
             }`}
             onClick={() => {
-              console.log(element)
+              onElementSelect(element)
             }}
           >
             <div className="flex justify-between items-center">
@@ -92,6 +78,14 @@ export default function ControlPanel({
                   : '图片'
                 }
               </span>
+              {selectedElement?.id === element.id && (
+                <button
+                  className="btn btn-soft btn-error btn-xs"
+                  onClick={() => onDeleteElement(element.id)}
+                >
+                  <Icons icon="delete" />
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -238,6 +232,38 @@ export default function ControlPanel({
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-2">
+          <div className="form-control">
+            <label className="label mb-2">
+              <span className="label-text">字重</span>
+            </label>
+            <select
+              value={textElement.fontWeight}
+              onChange={(e) => onUpdateElement(textElement.id, {
+                fontWeight: e.target.value
+              })}
+              className="select select-bordered"
+            >
+              <option value="normal">正常</option>
+              <option value="bold">粗体</option>
+              <option value="lighter">细体</option>
+            </select>
+          </div>
+          <div className="form-control">
+            <label className="label mb-2">
+              <span className="label-text">层级</span>
+            </label>
+            <input
+              type="number"
+              value={textElement.zIndex}
+              onChange={(e) => onUpdateElement(textElement.id, {
+                zIndex: parseInt(e.target.value)
+              })}
+              className="input input-bordered"
+            />
+          </div>
+        </div>
+
         <div className="form-control">
           <label className="label mb-2">
             <span className="label-text">字体</span>
@@ -256,23 +282,6 @@ export default function ControlPanel({
             <option value="Georgia">Georgia</option>
             <option value="Microsoft YaHei">微软雅黑</option>
             <option value="SimHei">黑体</option>
-          </select>
-        </div>
-
-        <div className="form-control">
-          <label className="label mb-2">
-            <span className="label-text">字重</span>
-          </label>
-          <select
-            value={textElement.fontWeight}
-            onChange={(e) => onUpdateElement(textElement.id, {
-              fontWeight: e.target.value
-            })}
-            className="select select-bordered"
-          >
-            <option value="normal">正常</option>
-            <option value="bold">粗体</option>
-            <option value="lighter">细体</option>
           </select>
         </div>
       </div>
@@ -362,6 +371,21 @@ export default function ControlPanel({
               className="input input-bordered"
             />
           </div>
+        </div>
+
+        <div className="form-control">
+          <label className="label mb-2">
+            <span className="label-text">层级</span>
+          </label>
+          <input
+            min={0}
+            type="number"
+            value={imageElement.zIndex}
+            onChange={(e) => onUpdateElement(imageElement.id, {
+              zIndex: parseInt(e.target.value)
+            })}
+            className="input input-bordered"
+          />
         </div>
       </div>
     )

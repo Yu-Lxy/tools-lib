@@ -13,14 +13,25 @@ const defaultPosterConfig: PosterConfig = {
     {
       id: 'title-1',
       type: 'text',
-      content: '欢迎使用海报生成器',
-      fontSize: 36,
+      content: '我是🦭生成器',
+      fontSize: 28,
       color: '#333333',
-      x: 100,
-      y: 100,
+      x: 30,
+      y: 30,
       fontFamily: 'system-ui',
       fontWeight: 'bold',
+      zIndex: 2,
     } as TextElement,
+    {
+      id: 'image-1',
+      type: 'image',
+      src: 'https://avatars.githubusercontent.com/u/31298201?v=4',
+      x: 30,
+      y: 80,
+      width: 150,
+      height: 150,
+      zIndex: 1,
+    } as ImageElement,
   ],
 }
 
@@ -52,7 +63,7 @@ export default function PosterGeneratorPage() {
       content: '新建文本',
       fontSize: 24,
       color: '#333333',
-      x: 100,
+      x: 350,
       y: 100,
       fontFamily: 'system-ui',
       fontWeight: 'normal',
@@ -73,7 +84,7 @@ export default function PosterGeneratorPage() {
         id: `image-${Date.now()}`,
         type: 'image',
         src: e.target?.result as string,
-        x: 100,
+        x: 350,
         y: 200,
         width: 200,
         height: 200,
@@ -89,12 +100,12 @@ export default function PosterGeneratorPage() {
   }, [])
 
   // 删除选中元素
-  const deleteSelectedElement = useCallback(() => {
+  const deleteSelectedElement = useCallback((id: string) => {
     if (!selectedElement) return
     
     setPosterConfig(prev => ({
       ...prev,
-      elements: prev.elements.filter(element => element.id !== selectedElement.id),
+      elements: prev.elements.filter(element => element.id !== id),
     }))
     setSelectedElement(null)
   }, [selectedElement])
@@ -115,6 +126,7 @@ export default function PosterGeneratorPage() {
             <PosterPreview
               posterConfig={posterConfig}
               selectedElement={selectedElement}
+              onElementSelect={setSelectedElement}
             />
           </div>
           
@@ -125,6 +137,7 @@ export default function PosterGeneratorPage() {
               selectedElement={selectedElement}
               onConfigUpdate={setPosterConfig}
               onUpdateElement={onUpdateElement}
+              onElementSelect={setSelectedElement}
               onAddText={addTextElement}
               onAddImage={addImageElement}
               onDeleteElement={deleteSelectedElement}
