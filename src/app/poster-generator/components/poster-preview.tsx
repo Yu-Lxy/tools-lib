@@ -202,7 +202,7 @@ export default function PosterPreview({
             <Icons icon="download" />
           </button>
         </div>
-        <div className="border-2 border-dashed border-base-300 rounded-lg bg-base-200">
+        <div className="border-2 border-dashed border-base-300 rounded-lg bg-base-200 overflow-hidden">
           <div className="flex justify-center">
             <canvas
               ref={canvasRef}
