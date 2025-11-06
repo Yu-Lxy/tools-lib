@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect } from 'react'
 import Icons from '@/app/components/icons'
 import { PosterConfig, PosterElement } from '../types'
 
@@ -65,8 +65,8 @@ export default function PosterPreview({
             try {
               const img = await loadImage(el.src)
               imageCache.set(key, img)
-            } catch (_) {
-              console.error('Failed to load image:', el.src)
+            } catch (err) {
+              console.error('Failed to load image:', el.src, err)
             }
           })
       )
@@ -129,7 +129,7 @@ export default function PosterPreview({
     const arr = base64.split(',')
     const mime = arr[0].match(/:(.*?);/)![1]
     const bstr = atob(arr[1])
-    let n: any = bstr.length
+    let n: number = bstr.length
     const u8arr = new Uint8Array(n)
     while (n--) {
       u8arr[n] = bstr.charCodeAt(n)
