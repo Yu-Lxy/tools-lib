@@ -11,7 +11,7 @@ const defaultPosterConfig: PosterConfig = {
   backgroundColor: '#ffffff',
   elements: [
     {
-      id: 'title-1',
+      id: 'text-1',
       type: 'text',
       content: '我是🦭生成器',
       fontSize: 28,
@@ -67,6 +67,7 @@ export default function PosterGeneratorPage() {
       y: 100,
       fontFamily: 'system-ui',
       fontWeight: 'normal',
+      zIndex: defaultPosterConfig.elements.map(element => element.zIndex ?? 0).reduce((a, b) => a + b, 0) + 1,
     }
     
     setPosterConfig(prev => ({
@@ -88,6 +89,7 @@ export default function PosterGeneratorPage() {
         y: 200,
         width: 200,
         height: 200,
+        zIndex: defaultPosterConfig.elements.map(element => element.zIndex ?? 0).reduce((a, b) => a + b, 0) + 1,
       }
       
       setPosterConfig(prev => ({
@@ -100,15 +102,15 @@ export default function PosterGeneratorPage() {
   }, [])
 
   // 删除选中元素
-  const deleteSelectedElement = useCallback((id: string) => {
+  const deleteSelectedElement = (id: string) => {
     if (!selectedElement) return
-    
+
+    setSelectedElement(null)
     setPosterConfig(prev => ({
       ...prev,
       elements: prev.elements.filter(element => element.id !== id),
     }))
-    setSelectedElement(null)
-  }, [selectedElement])
+  }
 
   return (
     <div className="container mx-auto p-4">

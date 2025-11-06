@@ -7,8 +7,7 @@ import { PosterConfig, PosterElement } from '../types'
 interface PosterPreviewProps {
   posterConfig: PosterConfig;
   selectedElement: PosterElement | null;
-  onElementSelect: (element: PosterElement) => void;
-  // onElementUpdate: (elementId: string, updates: Partial<PosterElement>) => void;
+  onElementSelect: (element: PosterElement | null) => void;
 }
 
 export default function PosterPreview({
@@ -19,6 +18,17 @@ export default function PosterPreview({
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
+    drawPoster()
+  }, [posterConfig])
+
+  useEffect(() => {
+    // console.log('selectedElement', selectedElement)
+    drawPoster()
+    drawSelectedBorder()
+  }, [selectedElement])
+
+  // 绘制海报
+  const drawPoster = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -77,39 +87,43 @@ export default function PosterPreview({
           }
         }
       })
+
     })()
+  }
 
-    // drawSelectedBorder(ctx)
+  // 绘制选中框
+  const drawSelectedBorder = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
 
-  }, [posterConfig])
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-  // const drawSelectedBorder = (ctx: CanvasRenderingContext2D) => {
-  //   // 绘制选中框
-  //   if (selectedElement) {
-  //     ctx.strokeStyle = '#3b82f6'
-  //     ctx.lineWidth = 2
-  //     ctx.setLineDash([5, 5])
-      
-  //     if (selectedElement.type === 'text') {
-  //       const textWidth = ctx.measureText(selectedElement.content).width
-  //       ctx.strokeRect(
-  //         selectedElement.x - 5,
-  //         selectedElement.y - 5,
-  //         textWidth + 10,
-  //         selectedElement.fontSize + 10
-  //       )
-  //     } else if (selectedElement.type === 'image') {
-  //       ctx.strokeRect(
-  //         selectedElement.x - 5,
-  //         selectedElement.y - 5,
-  //         selectedElement.width + 10,
-  //         selectedElement.height + 10
-  //       )
-  //     }
-      
-  //     ctx.setLineDash([])
-  //   }
-  // }
+    // 在最上层绘制选中框
+    if (selectedElement) {
+      ctx.strokeStyle = '#3b82f6'
+      ctx.lineWidth = 2
+      ctx.setLineDash([5, 5])
+      if (selectedElement.type === 'text') {
+        ctx.font = `${selectedElement.fontWeight} ${selectedElement.fontSize}px ${selectedElement.fontFamily}`
+        const textWidth = ctx.measureText(selectedElement.content).width
+        ctx.strokeRect(
+          selectedElement.x - 5,
+          selectedElement.y - 5,
+          textWidth + 10,
+          selectedElement.fontSize + 10
+        )
+      } else if (selectedElement.type === 'image') {
+        ctx.strokeRect(
+          selectedElement.x - 5,
+          selectedElement.y - 5,
+          selectedElement.width + 10,
+          selectedElement.height + 10
+        )
+      }
+      ctx.setLineDash([])
+    }
+  }
 
   const base64ToBlob = (base64: string) => {
     const arr = base64.split(',')
@@ -142,10 +156,13 @@ export default function PosterPreview({
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    // 解决点击不准的问题
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    const x = (e.clientX - rect.left) * scaleX
+    const y = (e.clientY - rect.top) * scaleY
 
-    // 查找点击的元素（按 zIndex 从大到小命中）
+    // 查找点击的元素
     const elementsByZIndexDesc = [...posterConfig.elements].sort((a, b) => (b.zIndex ?? 0) - (a.zIndex ?? 0))
     const clickedElement = elementsByZIndexDesc.find(element => {
       if (element.type === 'text') {
@@ -171,11 +188,8 @@ export default function PosterPreview({
       return false
     })
 
-    if (clickedElement) {
-      onElementSelect(clickedElement)
-    } else {
-      onElementSelect(null as unknown as PosterElement)
-    }
+    // 点击到元素则选中；否则清空选中
+    onElementSelect(clickedElement ?? null)
   }
 
 

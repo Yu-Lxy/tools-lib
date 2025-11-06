@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Icons from '@/app/components/icons'
 import { PosterConfig, PosterElement, TextElement, ImageElement } from '../types'
 
@@ -9,7 +10,7 @@ interface ControlPanelProps {
   selectedElement: PosterElement | null;
   onUpdateElement: (elementId: string, updates: Partial<PosterElement>) => void;
   onConfigUpdate: (config: PosterConfig) => void;
-  onElementSelect: (element: PosterElement) => void;
+  onElementSelect: (element: PosterElement | null) => void;
   onAddText: () => void;
   onAddImage: (file: File) => void;
   onDeleteElement: (id: string) => void;
@@ -26,12 +27,27 @@ export default function ControlPanel({
   onDeleteElement,
 }: ControlPanelProps) {
   const [activeTab, setActiveTab] = useState<'elements' | 'background' | 'text' | 'image'>('elements')
+  const [fontFamily, setFontFamily] = useState('system-ui')
 
   // 处理图片上传
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       onAddImage(file)
+    }
+  }
+
+  // 处理字体上传
+  const onUploadFont = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const fontName = file.name.split('.')[0]
+      const fontUrl = URL.createObjectURL(file)
+      const fontFace = new FontFace(fontName, `url(${fontUrl})`)
+      fontFace.load().then(() => {
+        document.fonts.add(fontFace)
+        setFontFamily(fontName)
+      })
     }
   }
 
@@ -172,7 +188,7 @@ export default function ControlPanel({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-3">
           <div className="form-control">
             <label className="label mb-2">
               <span className="label-text">字体大小</span>
@@ -186,20 +202,36 @@ export default function ControlPanel({
               className="input input-bordered"
             />
           </div>
-
           <div className="form-control">
             <label className="label mb-2">
-              <span className="label-text">文字颜色</span>
+              <span className="label-text">字重</span>
+            </label>
+            <select
+              value={textElement.fontWeight}
+              onChange={(e) => onUpdateElement(textElement.id, {
+                fontWeight: e.target.value
+              })}
+              className="select select-bordered"
+            >
+              <option value="normal">正常</option>
+              <option value="bold">粗体</option>
+              <option value="lighter">细体</option>
+            </select>
+          </div>
+          <div className="form-control">
+            <label className="label mb-2">
+              <span className="label-text">层级</span>
             </label>
             <input
-              type="color"
-              value={textElement.color}
+              type="number"
+              value={textElement.zIndex}
               onChange={(e) => onUpdateElement(textElement.id, {
-                color: e.target.value
+                zIndex: parseInt(e.target.value)
               })}
               className="input input-bordered"
             />
           </div>
+          
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -235,55 +267,50 @@ export default function ControlPanel({
         <div className="grid grid-cols-2 gap-2">
           <div className="form-control">
             <label className="label mb-2">
-              <span className="label-text">字重</span>
+              <span className="label-text">字体</span>
             </label>
             <select
-              value={textElement.fontWeight}
+              value={textElement.fontFamily}
               onChange={(e) => onUpdateElement(textElement.id, {
-                fontWeight: e.target.value
+                fontFamily: e.target.value
               })}
               className="select select-bordered"
             >
-              <option value="normal">正常</option>
-              <option value="bold">粗体</option>
-              <option value="lighter">细体</option>
+              <option value="system-ui">系统默认</option>
+              <option value="Arial">Arial</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Microsoft YaHei">微软雅黑</option>
+              <option value="SimHei">黑体</option>
+              <option value={fontFamily}>{fontFamily}</option>
             </select>
           </div>
           <div className="form-control">
             <label className="label mb-2">
-              <span className="label-text">层级</span>
+              <span className="label-text">文字颜色</span>
             </label>
             <input
-              type="number"
-              value={textElement.zIndex}
+              type="color"
+              value={textElement.color}
               onChange={(e) => onUpdateElement(textElement.id, {
-                zIndex: parseInt(e.target.value)
+                color: e.target.value
               })}
               className="input input-bordered"
             />
           </div>
         </div>
-
         <div className="form-control">
-          <label className="label mb-2">
-            <span className="label-text">字体</span>
-          </label>
-          <select
-            value={textElement.fontFamily}
-            onChange={(e) => onUpdateElement(textElement.id, {
-              fontFamily: e.target.value
-            })}
-            className="select select-bordered"
-          >
-            <option value="system-ui">系统默认</option>
-            <option value="Arial">Arial</option>
-            <option value="Helvetica">Helvetica</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Microsoft YaHei">微软雅黑</option>
-            <option value="SimHei">黑体</option>
-          </select>
-        </div>
+            <label className="label mb-2">
+              <span className="label-text">上传字体包</span>
+            </label>
+            <input
+              type="file"
+              className="file-input file-input-neutral"
+              accept=".ttf,.otf,.woff,.woff2,.xft,.fon,.ttc,.ffil,eot"
+              onChange={onUploadFont}
+            />
+          </div>
       </div>
     )
   }
@@ -306,11 +333,15 @@ export default function ControlPanel({
           <label className="label mb-2">
             <span className="label-text">图片预览</span>
           </label>
-          <img
-            src={imageElement.src}
-            alt="预览"
-            className="max-w-full h-auto border rounded"
-          />
+          <div className="relative w-full aspect-square border rounded overflow-hidden bg-base-200">
+            <Image
+              src={imageElement.src}
+              alt="预览"
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
